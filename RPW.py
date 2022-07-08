@@ -1,94 +1,97 @@
-import numpy as np                                        #numpy kütüphanesinin çağrılması
+import numpy as np                                        #call to numpy library
 
-Cvalue=float(input("Lütfen bir 'C' değeri giriniz: "))    # Kullanıcıdan C değerinin alınması
+Cvalue=float(input("Please enter a 'C' value: "))    # Get ınput from user  ( "C value" ) 
 
 #---------------DOSYADAN VERİNİN ÇEKİLMESİ---------
-veri_file= open("veri.txt","r")                           # text dosyasının okunur modta açılması
-veri= [(i.split("\n")[0]) for i in veri_file]             # text dosyasının satırlarının veri adındaki listeye çekilmesi
+data_file= open("veri.txt","r")                           # open text file in read mode
+data= [(i.split("\n")[0]) for i in data_file]             # populate list "data" with text file's lines.
 
 
-versay=int(veri[0])                       # Görev sayısı bilgisinin alınması
-veri.pop(0)                               # Görev sayısı bilgisinin "veri" listesinden çıkarılması
+numberOfTask=int(data[0])                       # Get "number of task" info 
+data.pop(0)                               # Pop the number of task info from "data" list
 
 
-time={}                                   # Görev süre bilgilerini tutan dictionary oluşturulması
-for i in range((versay)):
-    time[i+1]=(float(veri[i]))
+time={}                                   # Create a dictionary that holds the task time
+for i in range((numberOfTask)):
+    time[i+1]=(float(data[i]))
 
 
 prio=[]
-for i in range(versay,len(veri)-1):       # Dosyadan çekilen öncelikler verisi
-    prio.append(veri[i])
+for i in range(numberOfTask,len(data)-1):       # Priorities which get from data
+    prio.append(data[i])
 
-pr=[(i.split(",")) for i in prio]         # Dosyadan çekilen öncelikler verisinin listelenmesi
+pr=[(i.split(",")) for i in prio]         #  List the priorities 
 
-#-------VERİLERİN KULLANILABİLİRLİĞİNİN ARTTIRILMASI-------
-zeros= np.zeros((versay,versay))          # Numpy array kullanarak 0'lardan oluşan bir öncelik matrix i oluşturur
+#-------ENHANCE THE DATA USABILITY -------
+zeros= np.zeros((numberOfTask,numberOfTask))          # Creates a priority matrix of 0s using a numpy array
 for n in pr: 
     x=(int(n[0]))-1
     y=(int(n[1]))-1
     zeros[x][y]=1
 
-cleanlist= np.zeros((versay,1))           # Nump array kullanarak Görev sayısı kadar liste açar
-cleanlist=cleanlist.tolist()              # Arraydan Listeye dönüşüm
+cleanlist= np.zeros((numberOfTask,1))           # Creates lists as many as  number of task by using np array 
+cleanlist=cleanlist.tolist()              #( np array => list ) transformation
 
 
-for rows in reversed(range(len(zeros))):  # Önceliklerin tersten başlanarak gruplandırılması
+for rows in reversed(range(len(zeros))):  # Grouping priorities, starting in reverse
     for el in range(len(zeros[rows])):
         if zeros[rows][el]==1:
             cleanlist[rows].append(el+1)
             
 
-for r in reversed(range(len(cleanlist))): # Öncelikler listelerinde tersten başlanarak gerekli işlemlerin yapılması
-    cleanlist[r].pop(0)                   # Listelerdeki sıfırların atılması
+for r in reversed(range(len(cleanlist))): # Grouping priorities, starting in reverse
+
+    cleanlist[r].pop(0)                   # Drop zeros from list(s)
     for elt in cleanlist[r]:              
         
             listforcu=cleanlist[elt-1]
-            cleanlist[r]=(cleanlist[r])+(listforcu)  #Kümülatif olarak listelerin sondan başa doğru eklenerek oluşturulması
+            cleanlist[r]=(cleanlist[r])+(listforcu)  # Kümülatif olarak listelerin sondan başa doğru eklenerek oluşturulması
             
-    cleanlist[r].insert(0,r+1)                        # Görevlerin kendi numaralarının listeye dahil edilmesi
+    cleanlist[r].insert(0,r+1)                        # Inclusion of tasks' own numbers in the list
 lenght=len(cleanlist)
-cleanlist[lenght-1].insert(0,lenght)       # Son elemanın son kümeye eklenişi
+cleanlist[lenght-1].insert(0,lenght)       # Addition of the last element to the last set
     
      
-def duplicate(x):                          # Listedeki tekrarlayan görevler silinip 1 er tane bırakmak için fonksiyon tanımlanması 
+def duplicate(x):                          # Defining a function to delete repetitive tasks in the list and leave 1 each ( using dictionary) 
   return list(dict.fromkeys(x))    
 
 
-caltlist = cleanlist.copy()                # Hesaplamalar için cleanlist listesinin kopyası oluşturulur
-caltlist = list(map(duplicate,caltlist))   # Listedeki tekrarlayan görevler silinir
+caltlist = cleanlist.copy()                # A copy of the cleanlist list is created for calculations
+caltlist = list(map(duplicate,caltlist))   # Repetitive tasks in the list are deleted
 
-copytime= time.copy()                      # Zamanların tutulduğu dictionary kopyalanır
+copytime= time.copy()                      # The dictionary where the times are kept is copied
  
-for ls in range(len(caltlist)):            # Hesaplama listesindeki değerlerin üzerinde tek tek dolaşılarak-          
-      for p in range(len(caltlist[ls])):        # time sözlüğünde denk gelen sürelerle eşleştirilmesi 
+for ls in range(len(caltlist)):            # Matching corresponding times in the time dictionary By navigating over the values in the calculation list one by one     
+      for p in range(len(caltlist[ls])):        
            caltlist[ls][p]=copytime[caltlist[ls][p]]
 
-total= list(map(sum,caltlist))             # Hesaplama listesindeki verilerin toplanarak görev ağırlıklarının hesaplanması
+total= list(map(sum,caltlist))             # Calculation of task weights by collecting the data in the calculation list
                         
 
-weight_dict={}                             # Göreve göre ağırlık verisinin tutulduğu dictionary'nin oluşturulması
+weight_dict={}                             # Creating the dictionary where the weight data is kept according to the task
 for item in range(len(total)):            
     weight_dict[(item+1)]=total[item]
 
-sorted_dict = sorted(weight_dict.items(), key=(lambda x: x[1]), reverse=True)    #görev ağırlıklarının büyükten küçüğe sıralanması
+sorted_dict = sorted(weight_dict.items(), key=(lambda x: x[1]), reverse=True)    # sorting the task weights from largest to smallest
  
 
-#--------------İSTASYONLARA ATANMA ----------------
-stationNo=1                                # Değişkenlerin,listelerin ve dictionarylerin tanımlanması
+#--------------ASSIGNMENT TO STATIONS ----------------
+# Defining variables, lists and dictionaries
 
-remain= Cvalue                             # İstasyondaki boş süresinin hesaplanabilmesi için C değerinin alınması
-Remain_Container={}                          #İstasyon boş sürelerinin tutulacağı sözlük
+remain= Cvalue                             # Taking the C value to calculate the idle time at the station
+Remain_Container={}                          # Dictionary to keep station idle times
 
-Stations={}                                # İstasyon atamalarının tutulacağı sözlük
-Stations[stationNo]=[]                     # İlk istasyonun açılması
+Stations={}                                # Dictionary to keep station assignments
+
+stationNo=1                                
+Stations[stationNo]=[]                     # Opening of the first station
 
 row=0
 
 while row < len(sorted_dict):                 
-    timeofitem=time[sorted_dict[row][0]]                    # Görevin süresi
+    timeofitem=time[sorted_dict[row][0]]                    # Duration of the task
     remain= remain - timeofitem
-    if remain >= 0:                                         # İstasyon kalan süre kontrolü
+    if remain >= 0:                                         # Station remaining time control
         Stations[stationNo].append(sorted_dict[row][0])
         Remain_Container[stationNo]=remain
         row+=1 #görevin istasyona eklenmesi  
@@ -100,30 +103,30 @@ while row < len(sorted_dict):
 
        
 #----------------Performans Hesaplamaları-----------
-Station_Total={}                                           # İstasyon Bazında Süreler
+Station_Total={}                                           # create a dictionary to hold Durations by Station 
 
 for i in range(len(Remain_Container)):
     Station_Total[i+1]= Cvalue - Remain_Container[i+1]
 
 #--------------DENGE GECİKMESİ ---------------------
-DengeGecSum = sum(Station_Total.values())                  # Toplam İstasyon Süresi
+balanceDelaySum = sum(Station_Total.values())                  # Total Station Time
 
-DengeGecik=(((len(Station_Total))*Cvalue)-DengeGecSum)/((len(Station_Total))*Cvalue)  #Denge gecikmesi hesaplanması
+balanceDelay=(((len(Station_Total))*Cvalue)-balanceDelaySum)/((len(Station_Total))*Cvalue)  # Calculation of balance delay
 
 
 #--------------HAT ETKİNLİĞİ---------------
-HatEtkinlik = DengeGecSum/((len(Station_Total))*Cvalue)    # Hat Etkinliği hesaplanması
+lineEfficiency = balanceDelaySum/((len(Station_Total))*Cvalue)    # Line Efficiency calculation
 
 
 #--------------HAT DÜZGÜNLÜK İNDEKSİ--------------
-Duzgunluk_Sum=[]                                           # Hat Düzgünlük İndeksi Hesaplaması 
+smoothnessSum=[]                                           # Line Smoothness Index Calculation
 MaxSTVal=max(Station_Total.values())
 
 for  k in Station_Total:
         res=((MaxSTVal)-Station_Total[k])**2
-        Duzgunluk_Sum.append(res)
-DuzgunlukTotal=sum(Duzgunluk_Sum)
-SI=DuzgunlukTotal**(1/2)
+        smoothnessSum.append(res)
+totalSmoothness=sum(smoothnessSum)
+SI=totalSmoothness**(1/2)
 SIPercent= SI/(Cvalue*(len(Station_Total)))
 
 totalIdle= sum(Remain_Container.values())
@@ -132,21 +135,21 @@ totalIdle= sum(Remain_Container.values())
 print("\n")
 print("* * * - - - - - - - - - - - - - - - - - SONUÇLAR - - - - - - - - - - - - - - - - - * * *")
 
-print("Atanan Elaman Sayısı:",versay,"\n" )
-print("Toplam İstasyon Sayısı:", len(Station_Total),"\n")
-print("Toplam İstasyon Boş Süresi:",totalIdle)
+print("Assigned element number:",numberOfTask,"\n" )
+print("Total Station Number:", len(Station_Total),"\n")
+print("Total Station Idle Time:",totalIdle)
 
 print("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ")
 for k in Stations:
     print("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ")
-    text="{StName}. İstasyon :{StTask} // İstasyon Süresi: {StTime} // İstasyon Boş süresi: {StIDLE}"
+    text="{StName}. Station :{StTask} // Station Time: {StTime} // Station Idle Time: {StIDLE}"
     print(text.format(StName=k,StTask=Stations[k],StTime=Station_Total[k],StIDLE=Remain_Container[k]))
     
 
 print("- - - - - - - - - - - -")
-print("Denge Gecikmesi Değeri:","%",round(DengeGecik*100,4))
+print("Balance Delay Value:","%",round(balanceDelay*100,4))
 print("* * * * * * ")
-print("Hat Etkinlik Değeri:","%",round(HatEtkinlik*100,4))
+print("Line Efficiency Value:","%",round(lineEfficiency*100,4))
 print("* * * * * * ")
-print("Hat Düzgünlük İndeksi:",round(SI,4))
+print("Line Smoothness Index:",round(SI,4))
               

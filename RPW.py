@@ -45,7 +45,7 @@ for r in reversed(range(len(cleanlist))): # Grouping priorities, starting in rev
     for elt in cleanlist[r]:              
         
             listforcu=cleanlist[elt-1]
-            cleanlist[r]=(cleanlist[r])+(listforcu)  # Kümülatif olarak listelerin sondan başa doğru eklenerek oluşturulması
+            cleanlist[r]=(cleanlist[r])+(listforcu)  # Creating lists cumulatively from bottom to top
             
     cleanlist[r].insert(0,r+1)                        # Inclusion of tasks' own numbers in the list
 lenght=len(cleanlist)
@@ -102,23 +102,23 @@ while row < len(sorted_dict):
 
 
        
-#----------------Performans Hesaplamaları-----------
+#----------------Performance Calculations -----------
 Station_Total={}                                           # create a dictionary to hold Durations by Station 
 
 for i in range(len(Remain_Container)):
     Station_Total[i+1]= Cvalue - Remain_Container[i+1]
 
-#--------------DENGE GECİKMESİ ---------------------
+#--------------BALANCE DELAY ---------------------
 balanceDelaySum = sum(Station_Total.values())                  # Total Station Time
 
 balanceDelay=(((len(Station_Total))*Cvalue)-balanceDelaySum)/((len(Station_Total))*Cvalue)  # Calculation of balance delay
 
 
-#--------------HAT ETKİNLİĞİ---------------
+#--------------Line Efficiency---------------
 lineEfficiency = balanceDelaySum/((len(Station_Total))*Cvalue)    # Line Efficiency calculation
 
 
-#--------------HAT DÜZGÜNLÜK İNDEKSİ--------------
+#--------------Line Smoothness Index--------------
 smoothnessSum=[]                                           # Line Smoothness Index Calculation
 MaxSTVal=max(Station_Total.values())
 
@@ -131,9 +131,9 @@ SIPercent= SI/(Cvalue*(len(Station_Total)))
 
 totalIdle= sum(Remain_Container.values())
 
-#--------------SONUÇ EKRANININ EKRANA YAZDIRILMASI-------------- 
+#--------------PRINT THE RESULTS ON SCREEN PART-------------- 
 print("\n")
-print("* * * - - - - - - - - - - - - - - - - - SONUÇLAR - - - - - - - - - - - - - - - - - * * *")
+print("* * * - - - - - - - - - - - - - - - - - RESULTS - - - - - - - - - - - - - - - - - * * *")
 
 print("Assigned element number:",numberOfTask,"\n" )
 print("Total Station Number:", len(Station_Total),"\n")
